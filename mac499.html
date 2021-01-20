@@ -1,0 +1,372 @@
+<HTML>
+<HEAD>
+   <TITLE>Rodrigo Mendes Leme - MAC 499 - Trabalho de Formatura Supervisionado</TITLE>
+   <META CHARSET='UTF-8'>
+</HEAD>
+
+<BODY BGCOLOR="FFFFFF">
+<H1><CENTER><B><U>MAC 499 - Trabalho de Formatura Supervisionado</U></B></CENTER></H1>
+<BR>
+
+<H1><CENTER><B><FONT COLOR="#3333FF">Sistema para Cruzamento de Dados Clínico-Genéticos da Viral Genetic Diversity Network (VGDN)</FONT></B></CENTER></H1>
+
+<BR>
+<CENTER><A HREF="http://watson.fapesp.br/virus/menu.htm"><IMG SRC="VGDN.jpg" BORDER=0></A></CENTER>
+<BR>
+
+<LI><B>Autor:</B> Rodrigo Mendes Leme
+<BR>
+<LI><B>Orientador:</B> Prof. João Eduardo Ferreira
+<BR>
+<LI><B>Colaborador:</B> Luciano Vieira de Araújo
+<BR>
+<BR>
+<HR>
+
+<H2 ALIGN=CENTER><B><FONT COLOR="#006600">Índice</FONT></B></H2>
+<DL>
+<DT><B><A HREF="#resumo">Resumo</A></B>
+<DT><B><A HREF="#introducao">1. Introdução</A></B>
+<DT><B><A HREF="#banco">2. Banco de dados</A></B>
+<DT><B><A HREF="#clinicos">3. Sistema de controle de dados clínicos de pacientes</B></A>
+<DD><A HREF="#extracao">3.1. Extração de dados</A>
+<DT><B><A HREF="#ambiente">4. Ambiente de armazenamento de dados de sequências genéticas</A></B>
+<DD><A HREF="#sequencias">4.1. Obtenção e armazenamento das sequências genéticas dos vírus</A>
+<DT><B><A HREF="#algoritmos">5. Algoritmos de bioinformática</A></B>
+<DD><A HREF="#alinhamento">5.1. Alinhamento de sequências</A>
+<DD><A HREF="#outros">5.2. Outros tipos de alinhamento</A>
+<DD><A HREF="#busca">5.3. Busca de sequências em bancos de dados</A>
+<DT><B><A HREF="#cruzamento">6. Cruzamento dos dados clínicos com dados genéticos</B></A>
+<DT><B><A HREF="#conclusoes">7. Conclusões</A></B>
+<DT><B><A HREF="#referencias">8. Referências</A></B>
+<DT><B><A HREF="#desafios">9. Desafios e frustrações</A></B>
+<DT><B><A HREF="#disciplinas">10. Disciplinas relevantes do BCC na IC</A></B>
+<DT><B><A HREF="#interacao">11. Interação com a equipe de trabalho</A></B>
+<DT><B><A HREF="#diferencas">12. Diferenças na forma de trabalho (BCC x IC)</A></B>
+<DT><B><A HREF="#aplicacoes">13. Aplicações de conceitos estudados no BCC no contexto real</A></B>
+<DT><B><A HREF="#continuando">14. Continuando na área</A></B>
+<DT><B><A HREF="#agradecimentos">15. Agradecimentos</A></B>
+<BR>
+<BR>
+<HR>
+
+<A NAME="resumo"><H2 ALIGN=CENTER><B><FONT COLOR="#006600">Resumo</FONT></B></H2>
+
+<P>&nbsp;&nbsp;&nbsp;&nbsp; Esta monografia visa a descrever o desenvolvimento do sistema de banco de dados responsável pelo armazenamento e cruzamento dos dados clínico-genéticos da Viral Genetic Diversity Network (VGDN). Tal sistema apresentou como meta a implementação de um banco de dados clínicos e suas interfaces, bem como o estudo de algoritmos de alinhamento de sequências genéticas, localização de mutações e cruzamento dos dados das mutações com os dados clínicos de utilização de medicamentos pelos pacientes participantes da VGDN. </P>
+<BR>
+<HR>
+
+<A NAME="introducao"><H2 ALIGN=CENTER><B><FONT COLOR="#006600">1. Introdução</FONT></B></H2>
+
+<P>&nbsp;&nbsp;&nbsp;&nbsp; A Viral Genetic Diversity Network (Rede de Diversidade Genética de Vírus - doravante VGDN) é um projeto temático da FAPESP na área de genômica. Tendo oficialmente iniciado suas atividades em 21/12/2000, tem por objetivo estudar, nos próximos anos, as variedades genéticas de quatro vírus: HIV-1 (AIDS), HCV (hepatite C), Hantavírus (causador de uma síndrome pulmonar) e RSV (infecções no trato respiratório, sobretudo em crianças). A VGDN funciona como uma rede multitarefa descentralizada, sendo constituída pelos seguintes grupos membros: </P>
+
+&nbsp;&nbsp;&nbsp;&nbsp; - Instituto de Ciências Biomédicas da USP.
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp; - Centro de Vigilância Epidemiológica da Secretária de Estado da Saúde de São Paulo.
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp; - Faculdade de Medicina da USP.
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp; - Fundação Pró-Sangue Hemocentro - São Paulo.
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp; - Centro de Referência e Treinamento - DST/AIDS.
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp; - Instituto Adolfo Lutz.
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp; - Instituto de Matemática e Estatística da USP (BIOINFO).
+<BR>
+
+<P>&nbsp;&nbsp;&nbsp;&nbsp; Na estrutura da VGDN, o Instituto de Matemática e Estatística da USP ficou responsável por todo o suporte computacional. A subárea de Banco de Dados foi encarregada de implementar a arquitetura dos bancos de dados, desde as aplicações e interfaces (front-end) até o armazenamento final dos dados (back-end), sempre tendo em mente eficiência, confiabilidade e segurança dos dados. Nessa arquitetura, foi prevista a necessidade de uma ferramenta que pudesse armazenar e cruzar as diversas e heterogêneas informações a respeito dos pacientes participantes da VGDN. Fazem parte dessa ferramenta um banco de dados clínicos, um módulo de controle desses dados, outro de extração e um ambiente de armazenamento de sequências genéticas. O primeiro item foi projetado usando o modelo relacional [<A HREF="#3">3</A>,<A HREF="#10">10</A>]; os outros foram desenvolvidos utilizando a ferramenta Borland Delphi 5.0 (ambiente Windows). </P>
+<P>&nbsp;&nbsp;&nbsp;&nbsp; O principal objetivo deste projeto de iniciação científica, portanto, foi a questão do cruzamento dos dados clínicos com os dados genéticos dos vírus de cada paciente, onde a ferramenta acima citada é um dos elementos pelo qual este cruzamento de dados poderá ser executado. Anteriormente tal processo ou era inexistente ou era feito manualmente. O sistema permite automatizar parte do processo. </P>
+<P>&nbsp;&nbsp;&nbsp;&nbsp; As atividades da iniciação científica abrangeram, portanto, diversos tópicos: técnicas de bancos de dados (modelagem, projeto, consultas), implementação dessas técnicas em uma linguagem orientada a objetos, noções de biologia molecular [<A HREF="#9">9</A>], análise de algoritmos de bioinformática [<A HREF="#1">1</A>] e, por fim, estudo desses algoritmos [<A HREF="#6">6</A>,<A HREF="#7">7</A>,<A HREF="#9">9</A>]. </P>
+<BR>
+<HR>
+
+<A NAME="banco"><H2 ALIGN=CENTER><B><FONT COLOR="#006600">2. Banco de dados</FONT></B></H2>
+
+<P>&nbsp;&nbsp;&nbsp;&nbsp; O banco de dados clínicos armazena todas as informações relativas aos pacientes e seus tratamentos. Há tabelas de pacientes, de instituições envolvidas no levantamento dos seus dados (via preenchimento de questionários) e na análise das amostras de sangue, de critérios de análise dos exames realizados nessas amostras, de drogas utilizadas nos tratamentos, etc. Há também tabelas auxiliares: municípios do Estado de São Paulo, ocupações, entrevistadores, doenças oportunistas e outras. </P>
+<P>&nbsp;&nbsp;&nbsp;&nbsp; Inicialmente, foram analisadas informações sobre o tratamento de 1450 pacientes portadores do HIV. Os bancos de dados para as outras tarefas coordenadas (HCV, Hantavírus e RSV) estão sendo realizados nos mesmos moldes do banco de dados do HIV, pelo Instituto Adolfo Lutz e pelo Instituto de Ciências Biomédicas da USP. </P
+<P>&nbsp;&nbsp;&nbsp;&nbsp; Na implementação do banco de dados, foi usado o formato Paradox, padrão do Borland Delphi 5.0. </P>
+<P>&nbsp;&nbsp;&nbsp;&nbsp; Todas as tabelas e seus relacionamentos fazem parte dos modelos lógico e físico do banco de dados, modelos estes que foram definidos na etapa inicial do projeto. Levou-se em conta nessa etapa de modelagem o acesso a informações abrangentes, precisas e com flexibilidade para o cruzamento de dados. </P>
+<BR>
+<HR>
+
+<A NAME="clinicos"><H2 ALIGN=CENTER><B><FONT COLOR="#006600">3. Sistema de controle de dados clínicos de pacientes</FONT></B></H2>
+
+<P>&nbsp;&nbsp;&nbsp;&nbsp; O sistema em questão é a interface do banco de dados clínicos com o usuário final (basicamente, as equipes dos laboratórios de coleta de amostras). Para cada tabela ou conjunto de tabelas, existe um formulário específico, onde o usuário pode criar, alterar, excluir ou pesquisar registros. </P>
+<P>&nbsp;&nbsp;&nbsp;&nbsp; A entrada do sistema consiste, além dos dados cadastrais auxiliares, nas informações contidas nos questionários de entrevista dos pacientes e nos seus prontuários médicos - ponto central do sistema, pois nesses dois formulários estão representados a epidemiologia e a terapêutica de cada paciente. </P>
+<P>&nbsp;&nbsp;&nbsp;&nbsp; A saída do sistema, por sua vez, constitui-se tanto no resultado de consultas feitas ao mesmo quanto na geração de relatórios. Alguns exemplos destes últimos são o relatório de doenças oportunistas por paciente e o de esquema ARV (anti-retroviral) por paciente. Todos os relatórios foram feitos na ferramenta QuickReport, nativa do Borland Delphi 5.0. Abaixo, um exemplo de relatório (drogas ARVs tomadas pelos pacientes): </P>
+
+<CENTER><IMG SRC="relatorio.gif" BORDER=0></CENTER>
+
+<P>&nbsp;&nbsp;&nbsp;&nbsp; Os formulários do sistema foram projetados após um levantamento de requisitos junto à Fundação Pró-Sangue e ao CRT-DST/Aids, através de reuniões de levantamento de dados e da análise de documentos (fichas de cadastramento de pacientes, prontuários médicos, relatórios de exames, etc). </P>
+<P>&nbsp;&nbsp;&nbsp;&nbsp; Dentre as funcionalidades do sistema, cabe destacar as operações de consistência existentes em cada formulário. Além do controle de transações e das referências de integridade, os dados são validados segundo regras pré-definidas durante o levantamento de requisitos, permitindo assim garantir e avaliar a qualidade dos dados obtidos dos questionários dos pacientes, bem como avaliar a aderência de cada um ao respectivo tratamento. Alguns exemplos de validações são: cruzamento de dados fornecidos pelo paciente com os obtidos no prontuário médico; confrontação de dados de comportamento de risco; validação dos diagnósticos de AIDS através de critérios como Rio de Janeiro/Caracas [<A HREF="#8">8</A>]; e outros. </P>
+<P>&nbsp;&nbsp;&nbsp;&nbsp; A ferramenta usada no desenvolvimento do sistema foi o Borland Delphi 5.0, para ambiente Windows. A escolha dessa ferramenta decorreu do fato de a mesma ser visual e orientada a objetos, bem como possuir boa integração com aplicações de bancos de dados. Ambos os fatos contribuíram para a diminuição do tempo de desenvolvimento, ao evitar a preocupação com a API do Windows e o acesso às tabelas Paradox. </P>
+<P>&nbsp;&nbsp;&nbsp;&nbsp; Alguns dos formulários implementados no sistema foram: questionário de entrevista do paciente; prontuário do paciente (ambos divididos em dados do caso, dados laboratoriais, categoria de exposição, dados clínicos e terapêutica anti-retroviral); pontuação de doenças (classificação do grau de envolvimento de cada doença oportunista na sintomatização da AIDS); exames (efetuados pelos laboratórios, contém valores e resultados [<A HREF="#8">8</A>]); e outras. O formulário abaixo, por exemplo, serve para entrar quais doenças oportunistas o paciente já teve: </P>
+
+<CENTER><IMG SRC="formulario.jpg" BORDER=0></CENTER>
+
+<P>&nbsp;&nbsp;&nbsp;&nbsp; Os formulários acessam o banco de dados clínicos diretamente, através das tabelas, ou via consultas SQL [<A HREF="#2">2</A>]. As mesmas permitem uma grande flexibilidade no manuseio do sistema, ao tornar a apresentação dos dados mais intuitiva. As consultas SQL são intensamente utilizadas em todas as operações de pesquisa de registros, sempre de forma transparente ao usuário. </P>
+
+<A NAME="extracao"><H3 ALIGN=CENTER><B><FONT COLOR="#006600">3.1. Extração de dados</FONT></B></H3>
+
+<P>&nbsp;&nbsp;&nbsp;&nbsp; Uma funcionalidade importante do sistema, extração de dados clínicos e terapêuticos, foi requisitada durante o período de desenvolvimento. Tal requisição foi uma decorrência da necessidade que a área médica tinha de analisar os dados numa ferramenta computacional de análise biológica, o EPI-INFO. </P>
+<P>&nbsp;&nbsp;&nbsp;&nbsp; Para implementar essa funcionalidade, foi criado um novo módulo no sistema. Ele é prontamente acessível aos usuários, através do menu principal. Sua interface com o usuário é bem simples, conforme pode-se ver abaixo, embora a implementação desse módulo seja relativamente complexa. </P>
+
+<CENTER><IMG SRC="epiinfo.jpg" BORDER=0></CENTER>
+
+<P>&nbsp;&nbsp;&nbsp;&nbsp; Para fazer a extração dos dados do banco em si, utilizou-se diversas consultas SQL. Uma curiosidade é que, na primeira versão, de teste, as consultas eram as mais simples possíveis, mas o tempo de execução mostrou-se inviável (8 horas). Após uma série de otimizações, na versão final esse tempo caiu drasticamente (menos de 2 minutos): uma diminuição de 23900%! </P>
+<BR>
+<HR>
+
+<A NAME="ambiente"><H2 ALIGN=CENTER><B><FONT COLOR="#006600">4. Ambiente de armazenamento de dados de sequências genéticas</FONT></B></H2>
+
+<P>&nbsp;&nbsp;&nbsp;&nbsp; A segunda parte do projeto consistiu no armazenamento e análise das sequências genéticas dos vírus de cada paciente e no estudo do cruzamento desses dados com os dados clínicos dos pacientes. </P>
+<P>&nbsp;&nbsp;&nbsp;&nbsp; A motivação biológica por trás dessa etapa estava no fato de que, por serem organismos altamente instáveis, compostos por genes mutantes e recombinantes, os quatro vírus pesquisados pela VGDN apresentam problemas quanto a resistência a drogas. </P>
+<P>&nbsp;&nbsp;&nbsp;&nbsp; No caso do HIV, tal problema é uma consequência inevitável da não inibição completa de sua reprodução. A rápida taxa de reprodução do HIV e sua inerente variabilidade genética conduziram à identificação de muitas variantes do vírus, que apresentam suscetibilidades diversas às drogas ARVs. O crescente número de mutações ligadas a resistência listadas na literatura especializada [<A HREF="#4">4</A>] são uma prova da flexibilidade genética do HIV: existem, atualmente, cerca de 150. Exemplo: na transcriptase reversa, uma mudança na posição 65, de AAA para AGA, provoca uma alteração na proteína produzida - lisina para arginina - ocasionando resistência à droga DDI. A tabela abaixo mostra algumas mutações e as resistências provocadas pelas mesmas em relação a certas drogas:</P>
+
+<CENTER><IMG SRC="resist.jpg" BORDER=0></CENTER>
+
+<P>&nbsp;&nbsp;&nbsp;&nbsp; O resultado prático é que, sem a devida informação, um portador do HIV pode acabar recebendo uma droga ineficaz no seu tratamento, visto que o subtipo de vírus que ele tem pode ser resistente a essa droga. Essa é a principal consequência do cruzamento dos dados clínicos dos pacientes com os dados das mutações dos vírus, evitar tal situação. Além disso, o cruzamento de dados pode permitir: </P>
+
+&nbsp;&nbsp;&nbsp;&nbsp; - Identificar as mutações mais frequentes na população pesquisada.
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp; - Identificar as mutações mais frequentes em uma população que utiliza um determinado esquema de drogas.
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp; - Identificar possíveis novas mutações causadas por um esquema de drogas, comparando-as com amostras selvagens.
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp; - Verificar as posições catalogadas como sujeitas a mutação para identificar possível resistência do vírus a determinados esquemas de drogas.
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp; - Identificar possível influência de uma sequência de utilização de medicamentos no surgimento de determinadas mutações.
+<BR>
+
+<A NAME="sequencias"><H3 ALIGN=CENTER><B></B><FONT COLOR="#006600">4.1. Obtenção e armazenamento das sequências genéticas dos vírus</FONT></H3>
+
+<P>&nbsp;&nbsp;&nbsp;&nbsp; Para a obtenção das sequências e seu armazenamento, houve apoio técnico para a definição e utilização de ferramentas computacionais utilizadas na geração e validação das sequências genéticas dos vírus. Em especial, priorizou-se a busca de identificação de mutações, onde é preciso destacar o polimorfismo das sequências ao invés de simplesmente eliminá-lo. </P>
+<P>&nbsp;&nbsp;&nbsp;&nbsp; Para as demandas iniciais, criou-se um ambiente de armazenamento de sequências genéticas no sistema. O usuário tem duas formas de acesso às mesmas, ou pela importação de novas sequências (a fonte são arquivos-texto, fornecidos pela área médica, que contêm os vírus sequenciados) ou pela exportação das já cadastradas no banco de dados (ver figura abaixo). É importante dizer que a exportação fornece ao usuário inúmeros parâmetros de escolha de sequências, aumentando a flexibilidade. </P>
+
+<CENTER><IMG SRC="extracao.jpg" BORDER=0></CENTER>
+
+<P>&nbsp;&nbsp;&nbsp;&nbsp; Após a definição do processo de obtenção das sequências, o armazenamento dos dados foi feito de acordo com o modelo que permitiu a melhor integração entre os dados dos pacientes e futuras comparações com outros bancos de dados de sequências. </P>
+<BR>
+<HR>
+
+<A NAME="algoritmos"><H2 ALIGN=CENTER><B><FONT COLOR="#006600">5. Algoritmos de bioinformática</FONT></B></H2>
+
+<P>&nbsp;&nbsp;&nbsp;&nbsp; Ao longo de toda iniciação científica, temas de genética e de bioinformática foram estudados, desde a epidemilogia do HIV [<A HREF="#5">5</A>,<A HREF="#8">8</A>,<A HREF="#11">11</A>] até busca de sequências em bancos de dados [<A HREF="#9">9</A>,<A HREF="#12">12</A>]. </P>
+<P>&nbsp;&nbsp;&nbsp;&nbsp; Na verdade, quando se menciona algoritmos de resistência a drogas, tem-se em mente a especialização de algoritmos mais genéricos, dentro do contexto do HIV. Dessa forma, na parte final da IC o foco foi aprender esses algoritmos (genéricos) de bioinformática, por serem a base de muitos outros. </P>
+<P>&nbsp;&nbsp;&nbsp;&nbsp; Tudo começa pelo estudo de conceitos básicos de biologia molecular, pois eles fornecem o contexto sobre o qual surgem os problemas de genômica e os algoritmos capazes de resolvê-los. Dentre os conceitos vistos, encontram-se: aminoácidos e proteínas, ácidos nucleicos (DNA e RNA), bases nitrogenadas (adenina, citosina, guanina, timina e uracila, cujas iniciais "A", "C", "G", "T" e "U" constituem o famoso "alfabeto" da bioinformática), genes, cromossomos e síntese protéica (que inclui os processos biológicos transcrição e tradução). </P>
+<P>&nbsp;&nbsp;&nbsp;&nbsp; Completada essa etapa, passou-se para o estudo dos algoritmos em si. Mas é importante dizer onde eles se aplicam. No caso, são utilizados quando se deseja comparar duas ou mais sequências genéticas, a operação básica de bioinformática. Através da comparação de sequências, pode-se obter muitas informações, tais como: similaridade (medida numérica que indica quão similares são duas sequências); presença ou não de homologia (indica se dois ou mais genes possuem uma história evolutiva comum); alinhamento entre sequências (forma de se colocar uma sequência "acima" da outra, de maneira a evidenciar a correspondência entre caracteres ou subcadeias similares das sequências); entre outras. </P>
+
+<A NAME="alinhamento"><H3 ALIGN=CENTER><B><FONT COLOR="#006600">5.1. Alinhamento de sequências</FONT></B></H3>
+
+<P>&nbsp;&nbsp;&nbsp;&nbsp; O algoritmo mais básico de todos envolve encontrar o melhor alinhamento global entre duas dadas sequências. Por global, entenda-se alinhar as duas sequências inteiras. Um exemplo pode ser visto abaixo: </P>
+
+<CENTER><CODE>
+GA-CGGATTAG<BR>
+GATCGGAATAG<BR>
+</CODE></CENTER>
+
+<P>&nbsp;&nbsp;&nbsp;&nbsp; Em primeiro lugar, é preciso haver uma maneira de pontuar os alinhamentos. A forma mais utilizada é definir um certo valor para cada coluna do alinhamento e fazer a soma desses valores. Quando uma coluna tem caracteres idênticos, recebe um valor +1. Caracteres diferentes recebem valor -1. E, por fim, um espaço vale -2. O melhor alinhamento, também chamado de alinhamento ótimo, será aquele com a maior somatória desses valores. Para exemplificar: no alinhamento acima, a pontuação é 9 x 1 + 1 x (-1) + 1 x (-2) = 6.</P>
+<P>&nbsp;&nbsp;&nbsp;&nbsp; Agora, para descobrir a similaridade entre duas sequências, bastaria gerar todos os alinhamentos possíveis e escolher o de maior pontuação. Todavia, o número de alinhamentos entre duas sequências é exponencial, tornando esse método inviável. A solução consiste em utilizar programação dinâmica. </P>
+<P>&nbsp;&nbsp;&nbsp;&nbsp; Como em todo algoritmo que utiliza programação dinâmica, á idéia é começar com instâncias pequenas do problema a ser resolvido, aumentando essas instâncias até que todo o problema seja resolvido. No contexto de alinhamento de sequências, a solução é construída a partir dos prefixos das duas sequências <I>s</I> e <I>t</I>, dos menores até os maiores. Como temos <I>m</I> + 1 possíveis prefixos de <I>s</I> e <I>n</I> + 1 possíveis prefixos de <I>t</I>, podemos guardar o resultados dos cálculos de pontuação numa matriz, onde a entrada (<I>i</I>,<I>j</I>) contém a similaridade entre <I>s</I>[1..<I>i</I>] e <I>t</I>[1..<I>j</I>]. </P>
+<P>&nbsp;&nbsp;&nbsp;&nbsp; Um exemplo dessa matriz envolvendo as sequências <I>s</I> = <CODE>AAAC</CODE> e <I>t</I> = <CODE>AGC</CODE> pode ser visto abaixo: </P>
+
+<CENTER><IMG SRC="matriz_similaridade.jpg" BORDER=0></CENTER>
+
+<P>&nbsp;&nbsp;&nbsp;&nbsp; Analisando-se a matriz, conclui-se que a similaridade é dada pela expressão: sim(<I>s</I>[1..<I>i</I>],<I>t</I>[1..<I>j</I>]) = max(sim(<I>s</I>[1..<I>i</I>],<I>t</I>[1..<I>j</I> - 1]) - 2, sim(<I>s</I>[1..<I>i</I> - 1],<I>t</I>[1..<I>j</I> - 1]) + p(<I>i</I>,<I>j</I>), sim(<I>s</I>[1..<I>i</I> - 1],<I>t</I>[1..<I>j</I>]) - 2), onde p(<I>i</I>,<I>j</I>) = +1 se <I>s</I>[<I>i</I>] = <I>t</I>[<I>j</I>] e -1 se <I>s</I>[<I>i</I>] != <I>t</I>[<I>j</I>]. Com essa expressão, podemos obter um algoritmo que retorna a matriz de similaridade entre duas sequências: </P>
+
+<CODE>
+<B>Algoritmo</B> <I>Similaridade</I><BR>
+&nbsp&nbsp&nbsp<B>entrada:</B> sequências <I>s</I> e <I>t</I><BR>
+&nbsp&nbsp&nbsp<B>saída:</B> similaridade entre <I>s</I> e <I>t</I><BR>
+&nbsp&nbsp&nbsp<I>m</I> = |<I>s</I>|<BR>
+&nbsp&nbsp&nbsp<I>n</I> = |<I>t</I>|<BR>
+&nbsp&nbsp&nbsp<B>for</B> <I>i</I> = 0 <B>to</B> <I>m</I> <B>do</B><BR>
+&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<I>a</I>[<I>i</I>,0] = <I>i</I> x <I>g</I><BR>
+&nbsp&nbsp&nbsp<B>for</B> <I>j</I> = 0 <B>to</B> <I>n</I> <B>do</B><BR>
+&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<I>a</I>[0,<I>j</I>] = <I>j</I> x <I>g</I><BR>
+&nbsp&nbsp&nbsp<B>for</B> <I>i</I> = 1 <B>to</B> <I>m</I> <B>do</B><BR>
+&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<B>for</B> <I>j</I> = 1 <B>to</B> <I>n</I> <B>do</B><BR>
+&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<I>a</I>[<I>i</I>,<I>j</I>] = max(<I>a</I>[<I>i</I> - 1,<I>j</I>] + <I>g</I>, <I>a</I>[<I>i</I> - 1,<I>j</I> - 1] + p(<I>i</I>,<I>j</I>), <I>a</I>[<I>i</I>,<I>j</I> - 1] + <I>g</I>)<BR>
+&nbsp&nbsp&nbsp<B>return</B> <I>a</I>[<I>m</I>,<I>n</I>]
+</CODE>
+
+<P>&nbsp;&nbsp;&nbsp;&nbsp; Este algoritmo preenche a matriz de similaridades, computando as entradas linha a linha. Aqui, <I>g</I> = -2, p(<I>a</I>,<I>b</I>) = 1 se <I>a</I> = <I>b</I> e <I>p</I>(<I>a</I>,<I>b</I>) = -1 se <I>a</I> != <I>b</I>. </P>
+<P>&nbsp;&nbsp;&nbsp;&nbsp; Tendo como computar a similaridade entre duas sequências, o próximo passo é obter um alinhamento ótimo entre ambas. Para tal, as setas da figura acima serão úteis. A ordem decrescente de preferência de escolha das setas é vertical, diagonal e horizontal. Tudo o que precisamos é começar na entrada (m,n) da matriz e seguir as setas até a entrada (0,0), de acordo com a ordem acima especificada, de forma recursiva. O algoritmo abaixo implementa isso: </P>
+
+<CODE>
+<B>Algoritmo</B> <I>Alinhamento</I><BR>
+&nbsp&nbsp&nbsp<B>entrada</B>: índices <I>i</I>, <I>j</I> e matriz <I>a</I> dada pelo algoritmo <I>Similaridade</I><BR>
+&nbsp&nbsp&nbsp<B>saída</B>: alinhamento em <I>alinhamento-s</I>, <I>alinhamento-t</I> e o comprimento em <I>tam</I><BR>
+&nbsp&nbsp&nbsp<B>if</B> <I>i</I> == 0 <B>and</B> <I>j</I> == 0 <B>then</B><BR>
+&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<I>tam</I> = 0<BR>
+&nbsp&nbsp&nbsp<B>else if</B> <I>i</I> > 0 <B>and</B> <I>a</I>[<I>i</I>,<I>j</I>] == <I>a</I>[<I>i</I> - 1,<I>j</I>] + <I>g</I> <B>then</B><BR>
+&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<I>Alinhamento</I>(<I>i</I> - 1,<I>j</I>,<I>tam</I>)<BR>
+&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<I>tam</I> = <I>tam</I> + 1<BR>
+&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<I>alinhamento-s</I>[<I>tam</I>] = <I>s</I>[<I>i</I>]<BR>
+&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<I>alinhamento-t</I>[<I>tam</I>] = -<BR>
+&nbsp&nbsp&nbsp<B>else if</B> <I>i</I> > 0 <B>and</B> <I>j</I> > 0 <B>and</B> <I>a</I>[<I>i</I>,<I>j</I>] == <I>a</I>[<I>i</I> - 1,<I>j</I> - 1] + p(<I>i</I>,<I>j</I>) <B>then</B><BR>
+&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<I>Alinhamento</I>(<I>i</I> - 1, <I>j</I> - 1,<I>tam</I>)<BR>
+&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<I>tam</I> = <I>tam</I> + 1<BR>
+&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<I>alinhamento-s</I>[<I>tam</I>] = <I>s</I>[<I>i</I>]<BR>
+&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<I>alinhamento-t</I>[<I>tam</I>] = <I>t</I>[<I>j</I>]<BR>
+&nbsp&nbsp&nbsp<B>else</B><BR>
+&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<I>Alinhamento</I>(<I>i</I>,<I>j</I> - 1,<I>tam</I>)<BR>
+&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<I>tam</I> = <I>tam</I> + 1<BR>
+&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<I>alinhamento-s</I>[<I>tam</I>] = -<BR>
+&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<I>alinhamento-t</I>[<I>tam</I>] = <I>t</I>[<I>j</I>]<BR>
+</CODE>
+
+<P>&nbsp;&nbsp;&nbsp;&nbsp; A complexidade do algoritmo <I>Similaridade</I> é <I>O</I>(<I>mn</I>), ou, se as sequências tiverem (aproximadamente) o mesmo tamanho, <I>O</I>(<I>n</I><SUP>2</SUP>), complexidade quadrática. No caso do algoritmo <I>Alinhamento</I>, a complexidade é <I>O</I>(<I>tam</I>), ou seja, <I>O</I>(<I>m</I> + <I>n</I>). </P>
+
+<A NAME="outros"><H3 ALIGN=CENTER><B><FONT COLOR="#006600">5.2. Outros tipos de alinhamento</FONT></B></H3>
+
+<P>&nbsp;&nbsp;&nbsp;&nbsp; Ainda dentro de alinhamento entre duas sequências, pode-se alinhar, também, apenas subcadeias das sequências (alinhamento local), ou, ainda, seus prefixos e sufixos (alinhamento semiglobal). Ambos são variações do algoritmo básico.</P>
+<P>&nbsp;&nbsp;&nbsp;&nbsp; Outra técnica existente consiste em alinhar múltiplas sequências, uma generalização natural do alinhamento de duas sequências. O exemplo abaixo mostra um alinhamento múltiplo entre sequências protéicas: </P>
+
+<CENTER><CODE>
+MQPILLL<BR>
+MLR-LL-<BR>
+MK-ILLL<BR>
+MPPVLIL<BR>
+</CODE></CENTER>
+
+<P>&nbsp;&nbsp;&nbsp;&nbsp; Existem alguns problemas no caso múltiplo que não existem no caso básico: a pontuação dos alinhamentos; complexidade da abordagem que utiliza programação dinâmica pura (trata-se de um problema NP-completo); criação de heurísticas que aumentem a velocidade da computação; etc. Existem tanto estudos teóricos que atacam esses problemas quanto algoritmos que implementam essas heurísticas (métodos de alinhamento em estrela, em árvore, e outros), tornando possível, assim, viabilizar o alinhamento de múltiplas sequências. </P>
+
+
+<A NAME="busca"><H3 ALIGN=CENTER><B><FONT COLOR="#006600">5.3. Busca de sequências em bancos de dados</FONT></B></H3>
+
+<P>&nbsp;&nbsp;&nbsp;&nbsp; O estudo de algoritmos de bioinformática teria sido incompleto se não fosse abordado um tema cuja importância aumenta a cada dia: comparação de sequências genéticas em bancos de dados. </P>
+<P>&nbsp;&nbsp;&nbsp;&nbsp; A busca de sequências em bancos de dados permite determinar quais das centenas de milhares de sequências presentes no banco podem estar relacionadas a uma dada sequência. Nesse tipo de ambiente, a operação básica consiste em alinhar uma sequência de consulta com as sequências do banco de dados. Os resultados são apresentados como uma lista ordenada de "hits", seguidos por uma série de alinhamentos individuais, além de várias pontuações e estatísticas. </P>
+<P>&nbsp;&nbsp;&nbsp;&nbsp; Os atuais bancos de dados de sequências já são gigantescos, e continuam a crescer numa taxa exponencial. Isso torna a aplicação de programação dinâmica pura inviável, obrigando o uso de heurísticas, que aumentam bastante a velocidade dos alinhamentos (mas com uma pequena probabilidade de perder alinhamentos verdadeiros). </P>
+<P>&nbsp;&nbsp;&nbsp;&nbsp; Os dois programas de busca de sequências mais usados na atualidade são o FASTA e o BLAST. O FASTA foi o primeiro de todos os programas do tipo a ser amplamente utilizado, enquanto o BLAST, posteriormente introduzido, trouxe uma série de refinamentos. Quando de uma busca, ambos aplicam em primeiro lugar métodos heurísticos e, após a obtenção de uma lista inicial de sequências, métodos baseados em programação dinâmica, para, finalmente, gerarem a lista final de "hits". As figuras abaixo mostram as telas de entrada de dados do FASTA e do BLAST, respectivamente, acessíveis por seus web sites. </P>
+
+<CENTER><IMG SRC="FASTA.jpg" BORDER=0>
+<BR>
+<IMG SRC="BLAST.jpg" BORDER=0></CENTER>
+<BR>
+<BR>
+<HR>
+
+<A NAME="cruzamento"><H2 ALIGN=CENTER><B><FONT COLOR="#006600">6. Cruzamento dos dados clínicos com dados genéticos</FONT></B></H2>
+
+<P>&nbsp;&nbsp;&nbsp;&nbsp; Nesta etapa, que vai além do projeto, as sequências genéticas dos vírus devem ser analisadas para a identificação de mutações já catalogadas. Para tal identificação, deverá ser desenvolvido um algoritmo que compare as sequências obtidas com uma sequência padrão, identificando e numerando as alterações (mutações) encontradas. O algoritmo também deve relacionar as mutações encontradas com os medicamentos aos quais elas causam resistência e cruzar estes dados com os dados do tratamento de cada paciente. Tal algoritmo deve ser, obrigatoriamente, uma extensão dos algoritmos básicos de bioinformática aqui mencionados.</P>
+<BR>
+<HR>
+
+<A NAME="conclusoes"><H2 ALIGN=CENTER><B><FONT COLOR="#006600">7. Conclusões</FONT></B></H2>
+
+<P>&nbsp;&nbsp;&nbsp;&nbsp; Ao longo dos últimos anos, a pesquisa na área de genômica e de bioinformática vem obtendo crescente importância no país. Projetos bem sucedidos, como os da Xylella fastidiosa, da cana-de-açúcar, do câncer e outros apenas comprovam essa afirmação. Nesse contexto, a criação da VGDN torna-se mais um passo na aquisição de excelência por pesquisadores brasileiros nessa área. </P>
+<P>&nbsp;&nbsp;&nbsp;&nbsp; Dentro da VGDN, o sistema em questão nesta monografia forma uma parte do elo de ligação entre os pacientes, de um lado, e as informações de sequências genéticas, de outro, recebendo dados tanto das unidades de saúde envolvidas na VGDN quanto dos bancos de dados genéticos dos vírus estudados. </P>
+<P>&nbsp;&nbsp;&nbsp;&nbsp; Cumpriu-se, com isso, o objetivo proposto a este projeto de iniciação científica: a implementação de um banco de dados clínicos e suas interfaces, bem como o estudo de diversos temas de biologia computacional. O resultado final foi, portanto, além de toda a pesquisa gerada na área de bioinformática, uma ferramenta computacional extremamente útil para a saúde pública, ao permitir um controle muito mais acurado dos pacientes, seus tratamentos e das sequências genéticas dos vírus. </P>
+<BR>
+<HR>
+
+<A NAME="referencias"><H2 ALIGN=CENTER><B><FONT COLOR="#006600">8. Referências</FONT></B></H2>
+
+<P><A NAME="1">[1] Cormen, T. H., Leiserson, C. E., Rivest, R.L., Introduction to Algorithms. MIT Press. 1990. </P>
+
+<P><A NAME="2">[2] Date, C. J., Darwen, H. A Guide to the SQL Standard. Addison-Wesley, 4<SUP>th</SUP> ed. New York, 1997. </P>
+
+<P><A NAME="3">[3] Elmasri, R., Navathe, S. B., Fundamentals of Database Systems. Addison-Wesley. 2000. 3<SUP>rd</SUP> ed. </P>
+
+<P><A NAME="4">[4] Hammond, J., Calef, C., Larder, B., Schinazi, R., Mellors, J. W., Mutations in Retroviral Genes Associated with Drug Resistance, 1999. </P>
+
+<P><A NAME="5">[5] Siepel, A. C., Korber, B. T., Scanning the Databases for Recombinant HIV-1 Genomes, 1995. </P>
+
+<P><A NAME="6">[6] Los Alamos National Laboratory. http://idiotype.lanl.gov/ </P>
+
+<P><A NAME="7">[7] National Center for Biotechnology Information. http://www.ncbi.nlm.nih.gov/ </P>
+
+<P><A NAME="8">[8] Secretaria de Estado da Saúde de São Paulo. Manual de Vigilância Epidemiológica: AIDS - Normas e Instruções, 1995. </P>
+
+<P><A NAME="9">[9] Setubal, J., Meidanis, J., Introduction to Computational Molecular Biology. Boston: PWS, 1997, p. 1-103. </P>
+
+<P> <A NAME="10">[10] Silberschatz, A., Korth, H. F., Sudarshan, S., Sistema de Banco de Dados. Makron Books, São Paulo, 3&ordf ed. 1999. </P>
+
+<P><A NAME="11">[11] Stanford HIV RT and Protease Sequence Database. http://hivdb.stanford.edu/hiv </P>
+
+<P><A NAME="12">[12] Baxevanis, A. D., Ouellette, B. F. F., Bioinformatics: A Practical Guide to the Analysis of Genes and Proteins. John Wiley & Sons, 1998. </P>
+<BR>
+<HR>
+
+<A NAME="desafios"><H2 ALIGN=CENTER><B><FONT COLOR="#006600">9. Desafios e frustrações</FONT></B></H2>
+
+<P>&nbsp;&nbsp;&nbsp;&nbsp; <B>Desafios:</B> </P>
+
+<P>&nbsp;&nbsp;&nbsp;&nbsp; - Relembrar e aprender, rapidamente, noções de genética, após mais de 2 anos sem contato com o tema. </P>
+
+<P>&nbsp;&nbsp;&nbsp;&nbsp; - Otimizar as consultas SQL do módulo de extração de dados. Na primeira execução desse módulo, o tempo de espera até terminar a operação foi de 8 horas (!), que caiu para menos de 2 minutos após a otimização. </P>
+
+<P>&nbsp;&nbsp;&nbsp;&nbsp; - O relacionamento com os usuários do sistema, que envolvia negociar, resolver problemas, impor-se quando necessário, enfim, toda uma gama de situações até então virtualmente novas para mim. O que tornou ainda mais desafiador foi o fato de os usuários não serem da minha área (eram todos médicos). Todavia, foi uma experiência muito enriquecedora.
+
+<P>&nbsp;&nbsp;&nbsp;&nbsp; - Apresentar e expôr meu trabalho em público, no 9&ordm SIICUSP (Simpósio Internacional de Iniciação Científica da USP), em novembro de 2001. Aquela era uma situação inédita para mim, mas felizmente tudo correu bem, e pude vivenciar mais uma novidade. Meu colaborador, Luciano, também me ajudou no Simpósio. </P>
+
+<P>&nbsp;&nbsp;&nbsp;&nbsp; <B>Frustrações:</B> </P>
+
+<P>&nbsp;&nbsp;&nbsp;&nbsp; - Em alguns momentos, a qualidade do código que programei poderia ser maior, devido aos prazos de entrega. Como a iniciação científica era um ambiente de trabalho real, havia momentos em que entregar uma parte do sistema rodando era muito mais importante, então eu atendia essa prioridade primeiro. </P>
+
+<P>&nbsp;&nbsp;&nbsp;&nbsp; - Gostaria de ter podido dedicar mais tempo ao projeto, mas a rotina estressante que eu levava na graduação não me permitiu. </P>
+
+<P>&nbsp;&nbsp;&nbsp;&nbsp; - Apesar do meu esforço no 9&ordm SIICUSP, não logrei ganhar uma menção honrosa, o que teria sido muito interessante. </P>
+
+<BR>
+<HR>
+
+<A NAME="disciplinas"><H2 ALIGN=CENTER><B><FONT COLOR="#006600">10. Disciplinas relevantes do BCC na IC</FONT></B></H2>
+
+<P>&nbsp;&nbsp;&nbsp;&nbsp; <B>- MAC 211 (Laboratório de Programação):</B> primeira disciplina do curso onde desenvolvi um projeto maior. Essa experiência ajudou a me preparar para o que encontraria na iniciação científica. </P>
+
+<P>&nbsp;&nbsp;&nbsp;&nbsp; <B>- MAC 242 (Laboratório de Programação II):</B> continuação de MAC 211, também desenvolvi um projeto grande, dessa vez numa equipe de 4 pessoas, o que também me ajudou ao longo da IC. </P>
+
+<P>&nbsp;&nbsp;&nbsp;&nbsp; <B>- MAC 332 (Engenharia de Software):</B> o sistema desenvolvido por mim era relativamente complexo, sendo necessário gerenciá-lo de maneira apropriada. Nessa disciplina, pude aprender diversas técnicas de gerenciamente de um projeto de software. </P>
+
+<P>&nbsp;&nbsp;&nbsp;&nbsp; <B>- MAC 426 (Sistemas de Bancos de Dados):</B> fundamental para a iniciação científica, visto que a mesma envolvia modelar, implementar e implantar um banco de dados e suas interfaces. </P>
+
+<P>&nbsp;&nbsp;&nbsp;&nbsp; <B>- MAC 439 (Laboratório de Bancos de Dados):</B> aprofundamento de MAC 426, aprendi tópicos avançados de bancos de dados que, posteriormente, foram úteis no meu projeto. </P>
+
+<P>&nbsp;&nbsp;&nbsp;&nbsp; <B>- MAC 441 (Programação Orientada a Objetos):</B> onde aprendi as primeiras noções de orientação a objetos, utilizadas no sistema que desenvolvi. </P>
+<BR>
+<HR>
+
+<A NAME="interacao"><H2 ALIGN=CENTER><B><FONT COLOR="#006600">11. Interação com a equipe de trabalho</FONT></B></H2>
+
+<P>&nbsp;&nbsp;&nbsp;&nbsp; Desde o começo da minha iniciação científica, a interação com todos os membros da equipe da VGDN e do BIOINFO foi pautada pelo profissionalismo. Em particular, meu colaborador, Luciano, agiu como um verdadeiro mentor, sempre disponível quando eu tinha alguma dúvida. Sua contribuição para o meu trabalho foi muito importante, e aprendi bastante com ele e toda sua experiência. </P>
+<P>&nbsp;&nbsp;&nbsp;&nbsp; Meu orientador, Prof. João, também me ajudou durante o projeto, e não apenas pela oportunidade. Graças ao seu esforço, tive um ambiente tranquilo onde podia executar minhas tarefas. </P>
+<P>&nbsp;&nbsp;&nbsp;&nbsp; Por fim, também acabei interagindo com os colegas do BIOINFO, que, mesmo não fazendo parte da VGDN, trabalhavam no mesmo espaço físico. Consequentemente, os contatos que fiz na época foram muito valiosos, além de garantirem um bom clima no dia-a-dia. </P>
+<BR>
+<HR>
+
+<A NAME="diferencas"><H2 ALIGN=CENTER><B><FONT COLOR="#006600">12. Diferenças na forma de trabalho (BCC x IC)</FONT></B></H2>
+
+<P>&nbsp;&nbsp;&nbsp;&nbsp; Quando se está fazendo pesquisa como parte de um projeto maior, principalmente quando o patrocinador é a FAPESP, com certeza a cobrança é bem maior, pois a responsabilidade das pessoas envolvidas também o é. </P>
+<P>&nbsp;&nbsp;&nbsp;&nbsp; Uma diferença a se destacar é quanto à qualidade do software desenvolvido. No BCC, se os EP's estão funcionando 80%, o aluno tira 8 e tudo bem, ele está aprovado. Na iniciação científica, obviamente, o software desenvolvido não podia funcionar apenas 80%: um único bug e todo o esforço ficaria comprometido. Logo, a exigência por qualidade era uma preocupação contínua, e não somente perto dos prazos de entrega. </P>
+<P>&nbsp;&nbsp;&nbsp;&nbsp; Outra diferença importante é justamente a questão dos prazos. No BCC, caso a data de entrega do EP estivesse próxima e ainda faltasse programar várias partes, pedia-se um adiamento, que era concedido (na maioria das vezes). Já no caso da iniciação científica, não. Inclusive, porque quem determinava prazos não era algum professor, mas os usuários do software (no caso da VGDN, a área médica). Em outras palavras, era crucial cumprir o planejamento. </P>
+
+<BR>
+<HR>
+
+<A NAME="aplicacoes"><H2 ALIGN=CENTER><B><FONT COLOR="#006600">13. Aplicações de conceitos estudados no BCC no contexto real</FONT></B></H2>
+
+<P>&nbsp;&nbsp;&nbsp;&nbsp; Em termos concretos, os principais conceitos do curso utilizados na iniciação científica foram os de bancos de dados e os de implementação de sistemas. Os mesmos foram diretamente aplicados quando do desenvolvimento do meu projeto. </P>
+<P>&nbsp;&nbsp;&nbsp;&nbsp; Todavia, há alguns conceitos mais abstratos que também foram fundamentais. Trata-se do raciocínio lógico e da capacidade de resolver problemas. Esses dois pontos foram estudados indiretamente no curso, em disciplinas do MAT, do MAE e algumas do MAC, mas a importância deles pôde ser comprovada em diversos momentos da IC, como, por exemplo, na modelagem do banco de dados - um caso perfeito de resolução de um problema, utilizando métodos lógicos. </P>
+
+<BR>
+<HR>
+
+<A NAME="continuando"><H2 ALIGN=CENTER><B><FONT COLOR="#006600">14. Continuando na área</FONT></B></H2>
+
+<P>&nbsp;&nbsp;&nbsp;&nbsp; Caso eu continuasse atuando na área, o passo natural seria fazer o mestrado em computação. Há vários alunos do programa de mestrado do DCC pesquisando bioinformática e correlatos, entre eles meu colaborador, Luciano. Nesse contexto, eu continuaria na VGDN, dessa vez como mestrando, inclusive, se possível, sob a orientação do Prof. João, como ocorreu na iniciação científica. </P>
+<P>&nbsp;&nbsp;&nbsp;&nbsp; Para tal, seria importante complementar minha formação, não apenas com conhecimentos relativos a bancos de dados, mas, principalmente, com biologia, genética e genômica. É claro que não a ponto de tornar-me um especialista, mas o suficiente para agir com desenvoltura ao longo de um mestrado em bancos de dados para bioinformática. Essa formação poderia ser obtida na própria USP, através de disciplinas no ICB ou de cursos específicos para alunos de exatas de bioinformática. </P>
+<BR>
+<HR>
+
+<A NAME="agradecimentos"><H2 ALIGN=CENTER><B><FONT COLOR="#006600">15. Agradecimentos</FONT></B></H2>
+
+<P>&nbsp;&nbsp;&nbsp;&nbsp; Em primeiro lugar, gostaria de agradecer aos que estavam diretamente envolvidos comigo durante a iniciação científica: meu colaborador, Luciano Vieira de Araújo, e meu orientador, Prof. João Eduardo Ferreira. Graças aos dois, pude desenvolver este projeto, que tanto contribuiu para minha formação. </P>
+<P>&nbsp;&nbsp;&nbsp;&nbsp; Também gostaria de agradecer a toda a equipe do BIOINFO que esteve comigo desde o começo: Márcio Katsumi Oikawa, Gustavo Tadao Okida, Bianka Maria Moura Teixeira Gonçalves, Thiago Teixeira Santos, Ariane Machado Lima, Prof&ordf Nina Sumiko Tomita Hirata e Roberto Hirata Júnior. </P>
+<P>&nbsp;&nbsp;&nbsp;&nbsp; Finalmente, uma menção especial a minha tutora, Prof&ordf Yoshiko Wakabayashi, que me acompanhou não apenas durante a iniciação científica, mas desde o 1&ordm semestre. Prof&ordf, muito obrigado! </P>
+
+</BODY>
+
+</HTML>
